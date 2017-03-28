@@ -1,2 +1,2 @@
 # LAnimHelper
-Android L 涟漪、揭示动画兼容工具
+Android L 涟漪、揭示动画、共享元素兼容工具
