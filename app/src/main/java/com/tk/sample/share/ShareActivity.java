@@ -39,8 +39,22 @@ public class ShareActivity extends AppCompatActivity {
         }
     }
 
+
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
+        if (AnimCompat.animInterrupt(this)) {
+            return true;
+        }
         return super.dispatchTouchEvent(ev);
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (getIntent().getBooleanExtra("mode", false)) {
+            //共享元素兼容+揭示动画
+            AnimCompat.reverseShareAndRevealAnim(this, avatar);
+        } else {
+            AnimCompat.reverseShareAnim(this, avatar);
+        }
     }
 }

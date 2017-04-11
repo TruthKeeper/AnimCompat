@@ -83,13 +83,40 @@ public class RevealContainer extends FrameLayout {
         });
     }
 
+    /**
+     * 开始动画
+     */
     public void startAnim() {
         startAnim(null);
     }
 
+    /**
+     * 开始动画
+     *
+     * @param listener
+     */
     public void startAnim(Animator.AnimatorListener listener) {
         if (animator != null && !animator.isRunning()) {
             animator.start();
+        }
+        this.listener = listener;
+    }
+
+    /**
+     * 反向播放
+     */
+    public void reverse() {
+        reverse(null);
+    }
+
+    /**
+     * 反向播放
+     *
+     * @param listener
+     */
+    public void reverse(Animator.AnimatorListener listener) {
+        if (animator != null && !animator.isRunning()) {
+            animator.reverse();
         }
         this.listener = listener;
     }

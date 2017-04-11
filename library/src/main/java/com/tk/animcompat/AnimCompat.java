@@ -11,6 +11,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.ImageView;
 
 import java.util.Arrays;
@@ -24,8 +26,12 @@ import java.util.Arrays;
  */
 public class AnimCompat {
     public static final String REVEAL_LOCATION = "reveal_location";
-    public static final int SHARE_DURING = 500;
-    public static final int REVEAL_DURING = 500;
+    /**
+     * 动画标记
+     */
+    public static final String ANIM_TAG = "anim_tag";
+    public static final int SHARE_DURING = 450;
+    public static final int REVEAL_DURING = 450;
     //涟漪
 
     //揭示动画
@@ -50,7 +56,7 @@ public class AnimCompat {
     }
 
     /**
-     * 开始上个页面传递过来的共享元素动画
+     * 开始上个页面传递过来的，共享元素动画
      *
      * @param activity
      * @param target
@@ -62,7 +68,7 @@ public class AnimCompat {
     }
 
     /**
-     * 开始上个页面传递过来的共享元素动画
+     * 开始上个页面传递过来的，共享元素动画
      *
      * @param activity
      * @param target
@@ -77,7 +83,7 @@ public class AnimCompat {
     }
 
     /**
-     * 开始上个页面传递过来的共享元素动画 + 揭示动画
+     * 开始上个页面传递过来的，共享元素动画 + 揭示动画
      *
      * @param activity
      * @param target
@@ -95,19 +101,23 @@ public class AnimCompat {
      * @param activity
      * @param target
      * @param listener
-     * @param shareDuring 共享元素动画时长
-     * @param during      揭示动画时长
+     * @param shareDuring  共享元素动画时长
+     * @param revealDuring 揭示动画时长
      */
     public static void responseShareAndRevealAnim(@NonNull final Activity activity,
                                                   @NonNull final ImageView target,
                                                   @NonNull final OnImageLoadListener listener,
                                                   final int shareDuring,
-                                                  final int during) {
+                                                  final int revealDuring) {
+
         //获取位置信息
         final int[] oldLocation = activity.getIntent().getIntArrayExtra(REVEAL_LOCATION);
-        final ViewGroup contentView = (ViewGroup) activity.findViewById(android.R.id.content);
+        if (oldLocation == null) {
+            throw new IllegalStateException("error response !");
+        }
+        final ViewGroup contentView = (ViewGroup) activity.findViewById(Window.ID_ANDROID_CONTENT);
         target.setVisibility(View.INVISIBLE);
-        if (during > 0) {
+        if (revealDuring > 0) {
             //需要揭示动画
             if (!(contentView.getChildAt(0) instanceof RevealContainer)) {
                 //偷梁换柱
@@ -120,6 +130,7 @@ public class AnimCompat {
                 contentView.addView(revealContainer);
             }
         }
+        //UI线程未初始化完毕，需要post
         target.post(new Runnable() {
             @Override
             public void run() {
@@ -127,6 +138,7 @@ public class AnimCompat {
                 //添加一个假的装饰
                 final ViewGroup decorView = (ViewGroup) activity.getWindow().getDecorView();
                 final ImageView fakeView = new ImageView(activity);
+                decorView.setTag(ANIM_TAG);
                 final ViewGroup.MarginLayoutParams layoutParams = new ViewGroup.MarginLayoutParams(oldLocation[2] - oldLocation[0],
                         oldLocation[3] - oldLocation[1]);
                 decorView.addView(fakeView, layoutParams);
@@ -144,6 +156,7 @@ public class AnimCompat {
                 //位移+缩放动画
                 ViewCompat.animate(fakeView)
                         .setDuration(shareDuring)
+                        .setInterpolator(new AccelerateDecelerateInterpolator())
                         .translationXBy(targetCentX - fakeCentX)
                         .translationYBy(targetCentY - fakeCentY)
                         .scaleX(scaleX)
@@ -152,14 +165,14 @@ public class AnimCompat {
                         .withEndAction(new Runnable() {
                             @Override
                             public void run() {
-                                if (during > 0) {
+                                if (revealDuring > 0) {
                                     //需要揭示动画，自动配置
                                     int realY = targetCentY - getActionBarHeight(activity);
                                     float maxR = (float) maxDistance(targetCentX, realY);
                                     RevealOptions options = new RevealOptions.Builder()
                                             .centerX(targetCentX)
                                             .centerY(realY)
-                                            .during(during)
+                                            .during(revealDuring)
                                             .startRadius(0)
                                             .endRadius(maxR)
                                             .build();
@@ -174,12 +187,14 @@ public class AnimCompat {
                                         public void onAnimationEnd(Animator animation) {
                                             decorView.removeView(fakeView);
                                             target.setVisibility(View.VISIBLE);
+                                            decorView.setTag(null);
                                         }
 
                                         @Override
                                         public void onAnimationCancel(Animator animation) {
                                             decorView.removeView(fakeView);
                                             target.setVisibility(View.VISIBLE);
+                                            decorView.setTag(null);
                                         }
 
                                         @Override
@@ -188,6 +203,7 @@ public class AnimCompat {
                                     });
                                 } else {
                                     decorView.removeView(fakeView);
+                                    decorView.setTag(null);
                                     target.setVisibility(View.VISIBLE);
                                 }
                             }
@@ -196,21 +212,181 @@ public class AnimCompat {
         });
     }
 
-public static boolean animInterrupt(@NonNull final Activity activity){
-//    boolean loading=activity.getWindow().getDecorView().tag
-//    final ViewGroup contentView = (ViewGroup) activity.findViewById(android.R.id.content);
-//    if (!(contentView.getChildAt(0) instanceof RevealContainer)) {
-//        //偷梁换柱
-//        RevealContainer revealContainer = new RevealContainer(activity);
-//        for (int i = 0, length = contentView.getChildCount(); i < length; i++) {
-//            View child = contentView.getChildAt(i);
-//            contentView.removeView(child);
-//            revealContainer.addView(child);
-//        }
-//        contentView.addView(revealContainer);
-//    }
-    return true;
-}
+    public static void reverseShareAnim(@NonNull final Activity activity,
+                                        @NonNull final ImageView target) {
+        reverseShareAndRevealAnim(activity, target, SHARE_DURING, 0);
+    }
+
+    public static void reverseShareAnim(@NonNull final Activity activity,
+                                        @NonNull final ImageView target,
+                                        final int shareDuring) {
+        reverseShareAndRevealAnim(activity, target, shareDuring, 0);
+    }
+
+    public static void reverseShareAndRevealAnim(@NonNull final Activity activity,
+                                                 @NonNull final ImageView target) {
+        reverseShareAndRevealAnim(activity, target, SHARE_DURING, REVEAL_DURING);
+    }
+
+    /**
+     * 开始反向播放动画
+     *
+     * @param activity
+     * @param target
+     * @param shareDuring
+     * @param revealDuring
+     */
+    public static void reverseShareAndRevealAnim(@NonNull final Activity activity,
+                                                 @NonNull final ImageView target,
+                                                 final int shareDuring,
+                                                 final int revealDuring) {
+        if (animInterrupt(activity)) {
+            //还在response动画中
+            return;
+        }
+        //获取位置信息，上次的位置变成了新的位置
+        final int[] newLocation = activity.getIntent().getIntArrayExtra(REVEAL_LOCATION);
+        if (newLocation == null) {
+            throw new IllegalStateException("error reverse !");
+        }
+        final ViewGroup contentView = (ViewGroup) activity.findViewById(Window.ID_ANDROID_CONTENT);
+        target.setVisibility(View.INVISIBLE);
+        if (revealDuring > 0) {
+            //需要揭示动画
+            if (!(contentView.getChildAt(0) instanceof RevealContainer)) {
+                //开启页面没有揭示动画，关闭页面时附加一层，偷梁换柱
+                RevealContainer revealContainer = new RevealContainer(activity);
+                for (int i = 0, length = contentView.getChildCount(); i < length; i++) {
+                    View child = contentView.getChildAt(i);
+                    contentView.removeView(child);
+                    revealContainer.addView(child);
+                }
+                contentView.addView(revealContainer);
+            }
+        }
+        //在主线程就不post了
+        final int[] oldLocation = getLocation(target);
+        //添加一个假的装饰
+        final ViewGroup decorView = (ViewGroup) activity.getWindow().getDecorView();
+        final ImageView fakeView = new ImageView(activity);
+        //直接赋值drawable
+        fakeView.setImageDrawable(target.getDrawable());
+        decorView.setTag(ANIM_TAG);
+        final ViewGroup.MarginLayoutParams layoutParams = new ViewGroup.MarginLayoutParams(oldLocation[2] - oldLocation[0],
+                oldLocation[3] - oldLocation[1]);
+        decorView.addView(fakeView, layoutParams);
+        fakeView.setTranslationX(oldLocation[0]);
+        fakeView.setTranslationY(oldLocation[1]);
+        final float scaleX = (newLocation[2] - newLocation[0]) * 1F / (oldLocation[2] - oldLocation[0]);
+        final float scaleY = (newLocation[3] - newLocation[1]) * 1F / (oldLocation[3] - oldLocation[1]);
+        final int targetCentX = newLocation[2] + newLocation[0] >> 1;
+        final int targetCentY = newLocation[3] + newLocation[1] >> 1;
+        final int fakeCentX = oldLocation[2] + oldLocation[0] >> 1;
+        final int fakeCentY = oldLocation[3] + oldLocation[1] >> 1;
+
+        if (revealDuring > 0) {
+            //需要揭示动画，自动配置，先反向揭示在位移动画
+            int realY = fakeCentY - getActionBarHeight(activity);
+            float maxR = (float) maxDistance(fakeCentX, realY);
+            RevealOptions options = new RevealOptions.Builder()
+                    .centerX(fakeCentX)
+                    .centerY(realY)
+                    .during(revealDuring)
+                    .startRadius(0)
+                    .endRadius(maxR)
+                    .build();
+            final RevealContainer revealContainer = (RevealContainer) contentView.getChildAt(0);
+            revealContainer.init(options);
+            revealContainer.reverse(new Animator.AnimatorListener() {
+                @Override
+                public void onAnimationStart(Animator animation) {
+
+                }
+
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    //// TODO: 2017/4/11  会重复绘制，暂时这么处理
+                    revealContainer.setVisibility(View.INVISIBLE);
+                    //位移+缩放动画
+                    ViewCompat.animate(fakeView)
+                            .setDuration(shareDuring)
+                            .setInterpolator(new AccelerateDecelerateInterpolator())
+                            .translationXBy(targetCentX - fakeCentX)
+                            .translationYBy(targetCentY - fakeCentY)
+                            .scaleX(scaleX)
+                            .scaleY(scaleY)
+                            .withLayer()
+                            .withEndAction(new Runnable() {
+                                @Override
+                                public void run() {
+                                    activity.finish();
+                                    activity.overridePendingTransition(0, 0);
+                                }
+                            })
+                            .start();
+                }
+
+                @Override
+                public void onAnimationCancel(Animator animation) {
+                    revealContainer.setVisibility(View.INVISIBLE);
+                    //位移+缩放动画
+                    ViewCompat.animate(fakeView)
+                            .setDuration(shareDuring)
+                            .setInterpolator(new AccelerateDecelerateInterpolator())
+                            .translationXBy(targetCentX - fakeCentX)
+                            .translationYBy(targetCentY - fakeCentY)
+                            .scaleX(scaleX)
+                            .scaleY(scaleY)
+                            .withLayer()
+                            .withEndAction(new Runnable() {
+                                @Override
+                                public void run() {
+                                    activity.finish();
+                                    activity.overridePendingTransition(0, 0);
+                                }
+                            })
+                            .start();
+                }
+
+                @Override
+                public void onAnimationRepeat(Animator animation) {
+
+                }
+            });
+        } else {
+            //位移+缩放动画
+            ViewCompat.animate(fakeView)
+                    .setDuration(shareDuring)
+                    .translationXBy(targetCentX - fakeCentX)
+                    .translationYBy(targetCentY - fakeCentY)
+                    .scaleX(scaleX)
+                    .scaleY(scaleY)
+                    .withLayer()
+                    .withEndAction(new Runnable() {
+                        @Override
+                        public void run() {
+                            activity.finish();
+                            activity.overridePendingTransition(0, 0);
+                        }
+                    })
+                    .start();
+        }
+
+    }
+
+    /**
+     * <pre>
+     *     动画中，可以选择拦截onBackPressed以及滑动事件
+     *     优化用户体验
+     * <pre/>
+     *
+     * @param activity
+     * @return
+     */
+    public static boolean animInterrupt(@NonNull final Activity activity) {
+        Object tag = activity.getWindow().getDecorView().getTag();
+        return ANIM_TAG.equals(tag);
+    }
 
     /**
      * 获取屏幕上一点离四个顶点的最大距离
