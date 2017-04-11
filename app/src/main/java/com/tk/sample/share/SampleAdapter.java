@@ -1,4 +1,4 @@
-package com.tk.lanim.share;
+package com.tk.sample.share;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -9,7 +9,7 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.tk.lanim.R;
+import com.tk.sample.R;
 
 /**
  * <pre>

@@ -1,19 +1,19 @@
-package com.tk.lanim.reveal;
+package com.tk.sample.ripple;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
-import com.tk.lanim.R;
+import com.tk.sample.R;
 
-public class RevealActivity extends AppCompatActivity implements View.OnClickListener {
 
+public class RippleActivity extends AppCompatActivity implements View.OnClickListener {
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_reveal);
+        setContentView(R.layout.activity_ripple);
 
     }
 

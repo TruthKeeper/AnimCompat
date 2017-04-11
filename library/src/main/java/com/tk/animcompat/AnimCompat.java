@@ -1,4 +1,4 @@
-package com.tk.lanimhelper;
+package com.tk.animcompat;
 
 import android.animation.Animator;
 import android.app.Activity;
@@ -22,7 +22,7 @@ import java.util.Arrays;
  *     desc   : Android L 涟漪、揭示动画、共享元素兼容工具
  * </pre>
  */
-public class LAnimHelper {
+public class AnimCompat {
     public static final String REVEAL_LOCATION = "reveal_location";
     public static final int SHARE_DURING = 500;
     public static final int REVEAL_DURING = 500;
@@ -39,7 +39,9 @@ public class LAnimHelper {
      * @param intent
      * @param imageView
      */
-    public static void requestShareAnim(@NonNull Activity activity, @NonNull Intent intent, @NonNull ImageView imageView) {
+    public static void requestShareAnim(@NonNull final Activity activity,
+                                        @NonNull final Intent intent,
+                                        @NonNull final ImageView imageView) {
         //存储位置信息
         intent.putExtra(REVEAL_LOCATION, getLocation(imageView));
         intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
@@ -47,24 +49,60 @@ public class LAnimHelper {
         activity.overridePendingTransition(0, 0);
     }
 
-    public static void responseShareAnim(final Activity activity, final ImageView target,
-                                         final OnImageLoadListener listener) {
+    /**
+     * 开始上个页面传递过来的共享元素动画
+     *
+     * @param activity
+     * @param target
+     * @param listener
+     */
+    public static void responseShareAnim(@NonNull final Activity activity, @NonNull final ImageView target,
+                                         @NonNull final OnImageLoadListener listener) {
         responseShareAndRevealAnim(activity, target, listener, SHARE_DURING, 0);
     }
 
-    public static void responseShareAnim(final Activity activity, final ImageView target,
-                                         final OnImageLoadListener listener, int shareDuring) {
+    /**
+     * 开始上个页面传递过来的共享元素动画
+     *
+     * @param activity
+     * @param target
+     * @param listener
+     * @param shareDuring 共享元素动画时长
+     */
+    public static void responseShareAnim(@NonNull final Activity activity,
+                                         @NonNull final ImageView target,
+                                         @NonNull final OnImageLoadListener listener,
+                                         int shareDuring) {
         responseShareAndRevealAnim(activity, target, listener, shareDuring, 0);
     }
 
-    public static void responseShareAndRevealAnim(final Activity activity, final ImageView target,
-                                                  final OnImageLoadListener listener) {
+    /**
+     * 开始上个页面传递过来的共享元素动画 + 揭示动画
+     *
+     * @param activity
+     * @param target
+     * @param listener
+     */
+    public static void responseShareAndRevealAnim(@NonNull final Activity activity,
+                                                  @NonNull final ImageView target,
+                                                  @NonNull final OnImageLoadListener listener) {
         responseShareAndRevealAnim(activity, target, listener, SHARE_DURING, REVEAL_DURING);
     }
 
-    public static void responseShareAndRevealAnim(final Activity activity, final ImageView target,
-                                                  final OnImageLoadListener listener, final int shareDuring, final int during) {
-
+    /**
+     * 开始上个页面传递过来的共享元素动画 + 揭示动画
+     *
+     * @param activity
+     * @param target
+     * @param listener
+     * @param shareDuring 共享元素动画时长
+     * @param during      揭示动画时长
+     */
+    public static void responseShareAndRevealAnim(@NonNull final Activity activity,
+                                                  @NonNull final ImageView target,
+                                                  @NonNull final OnImageLoadListener listener,
+                                                  final int shareDuring,
+                                                  final int during) {
         //获取位置信息
         final int[] oldLocation = activity.getIntent().getIntArrayExtra(REVEAL_LOCATION);
         final ViewGroup contentView = (ViewGroup) activity.findViewById(android.R.id.content);
@@ -114,10 +152,9 @@ public class LAnimHelper {
                         .withEndAction(new Runnable() {
                             @Override
                             public void run() {
-
                                 if (during > 0) {
                                     //需要揭示动画，自动配置
-                                    int realY =targetCentY-getActionBarHeight(activity);
+                                    int realY = targetCentY - getActionBarHeight(activity);
                                     float maxR = (float) maxDistance(targetCentX, realY);
                                     RevealOptions options = new RevealOptions.Builder()
                                             .centerX(targetCentX)
@@ -149,6 +186,9 @@ public class LAnimHelper {
                                         public void onAnimationRepeat(Animator animation) {
                                         }
                                     });
+                                } else {
+                                    decorView.removeView(fakeView);
+                                    target.setVisibility(View.VISIBLE);
                                 }
                             }
                         }).start();
@@ -156,6 +196,21 @@ public class LAnimHelper {
         });
     }
 
+public static boolean animInterrupt(@NonNull final Activity activity){
+//    boolean loading=activity.getWindow().getDecorView().tag
+//    final ViewGroup contentView = (ViewGroup) activity.findViewById(android.R.id.content);
+//    if (!(contentView.getChildAt(0) instanceof RevealContainer)) {
+//        //偷梁换柱
+//        RevealContainer revealContainer = new RevealContainer(activity);
+//        for (int i = 0, length = contentView.getChildCount(); i < length; i++) {
+//            View child = contentView.getChildAt(i);
+//            contentView.removeView(child);
+//            revealContainer.addView(child);
+//        }
+//        contentView.addView(revealContainer);
+//    }
+    return true;
+}
 
     /**
      * 获取屏幕上一点离四个顶点的最大距离

@@ -1,4 +1,4 @@
-package com.tk.lanim.share;
+package com.tk.sample.share;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -7,8 +7,8 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.widget.ImageView;
 
-import com.tk.lanim.R;
-import com.tk.lanimhelper.LAnimHelper;
+import com.tk.animcompat.AnimCompat;
+import com.tk.sample.R;
 
 public class ShareListActivity extends AppCompatActivity implements SampleAdapter.OnClickListener {
     private RecyclerView recyclerview;
@@ -32,6 +32,6 @@ public class ShareListActivity extends AppCompatActivity implements SampleAdapte
         Intent intent = new Intent(this, ShareActivity.class);
         //额外传递参数来展示揭示动画
         intent.putExtra("mode", position % 2 == 0);
-        LAnimHelper.requestShareAnim(this, intent, view);
+        AnimCompat.requestShareAnim(this, intent, view);
     }
 }

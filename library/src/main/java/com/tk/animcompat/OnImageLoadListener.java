@@ -1,4 +1,4 @@
-package com.tk.lanimhelper;
+package com.tk.animcompat;
 
 import android.widget.ImageView;
 

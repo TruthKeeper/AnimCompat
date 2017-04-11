@@ -1,4 +1,4 @@
-package com.tk.lanim;
+package com.tk.sample;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -6,9 +6,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 
-import com.tk.lanim.reveal.RevealActivity;
-import com.tk.lanim.ripple.RippleActivity;
-import com.tk.lanim.share.ShareListActivity;
+import com.tk.sample.share.ShareListActivity;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private Button btnRipple;
@@ -33,10 +31,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.btn_ripple:
-                startActivity(new Intent(this, RippleActivity.class));
+//                startActivity(new Intent(this, RippleActivity.class));
                 break;
             case R.id.btn_reveal:
-                startActivity(new Intent(this, RevealActivity.class));
+//                startActivity(new Intent(this, RevealActivity.class));
                 break;
             case R.id.btn_share:
                 startActivity(new Intent(this, ShareListActivity.class));

@@ -1,4 +1,4 @@
-package com.tk.lanimhelper;
+package com.tk.animcompat;
 
 import android.animation.Animator;
 import android.animation.ValueAnimator;
@@ -100,6 +100,7 @@ public class RevealContainer extends FrameLayout {
         if (animator != null) {
             animator.cancel();
         }
+        listener = null;
     }
 
     @Override

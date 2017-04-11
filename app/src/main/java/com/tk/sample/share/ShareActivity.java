@@ -1,14 +1,15 @@
-package com.tk.lanim.share;
+package com.tk.sample.share;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.MotionEvent;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.tk.lanim.R;
-import com.tk.lanimhelper.LAnimHelper;
-import com.tk.lanimhelper.OnImageLoadListener;
+import com.tk.animcompat.AnimCompat;
+import com.tk.animcompat.OnImageLoadListener;
+import com.tk.sample.R;
 
 public class ShareActivity extends AppCompatActivity {
     private ImageView avatar;
@@ -32,15 +33,14 @@ public class ShareActivity extends AppCompatActivity {
 
         if (getIntent().getBooleanExtra("mode", false)) {
             //共享元素兼容+揭示动画
-            LAnimHelper.responseShareAndRevealAnim(this, avatar, onImageLoadListener);
+            AnimCompat.responseShareAndRevealAnim(this, avatar, onImageLoadListener);
         } else {
-            LAnimHelper.responseShareAnim(this, avatar, onImageLoadListener);
+            AnimCompat.responseShareAnim(this, avatar, onImageLoadListener);
         }
     }
 
     @Override
-    public void onBackPressed() {
-
-        super.onBackPressed();
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        return super.dispatchTouchEvent(ev);
     }
 }
